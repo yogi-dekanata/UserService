@@ -43,11 +43,11 @@ func newServer() (*handler.Server, error) {
 	m := middleware.NewMiddleware(jwt, repo)
 
 	// Initialize UserService here
-	userService := handler.NewUserService(repo, &commons.PasswordManager{})
 
 	opts := handler.NewServerOptions{
-		UserService: userService,
-		Middleware:  m,
+		Middleware: m,
+		Repository: repo,
+		Pwd:        &commons.PasswordManager{},
 	}
 
 	return handler.NewServer(opts), nil

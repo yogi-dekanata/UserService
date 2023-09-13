@@ -1,28 +1,30 @@
 package handler
 
 import (
+	"github.com/SawitProRecruitment/UserService/commons"
 	"github.com/SawitProRecruitment/UserService/middleware"
+	"github.com/SawitProRecruitment/UserService/repository"
 )
 
-// Server ...
 type Server struct {
-	//Jwt        commons.JwtInterface
-	Middleware  middleware.IMiddleware
-	UserService UserServiceInterface // Use the interface here
+	Repository repository.RepositoryInterface
+	Jwt        middleware.JwtInterface
+	Pwd        commons.PasswordManagerInterface
+	Middleware middleware.IMiddleware
 }
 
-// NewServerOptions ...
 type NewServerOptions struct {
-	//Jwt        commons.JwtInterface
-	Middleware  middleware.IMiddleware
-	UserService UserServiceInterface // Use the interface here
+	Repository repository.RepositoryInterface
+	Jwt        middleware.JwtInterface
+	Pwd        commons.PasswordManagerInterface
+	Middleware middleware.IMiddleware
 }
 
-// NewServer ...
 func NewServer(opts NewServerOptions) *Server {
 	return &Server{
-		//Jwt:        opts.Jwt,
-		Middleware:  opts.Middleware,
-		UserService: opts.UserService, // No need to change this
+		Repository: opts.Repository,
+		Jwt:        opts.Jwt,
+		Pwd:        opts.Pwd,
+		Middleware: opts.Middleware,
 	}
 }
