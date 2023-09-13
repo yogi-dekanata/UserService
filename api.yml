@@ -1,0 +1,256 @@
+# This is the OpenAPI specification for your service. It is used to generate the client code.
+# To generate the server code, use the Gradle task `openApiGenerate`. The 
+# generated code will be placed in `build/generate-resources/main`.
+#
+# We will evaluate you based on how well you design your API.
+# 1. How well it follows REST principles.
+# 2. How easy it is to understand and use.
+#
+# References
+# 1. https://swagger.io/specification/
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: User Service
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check if the service is running
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Service is not healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /register:
+    post:
+      summary: User Registration
+      description: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegisterRequest"
+      responses:
+        '201':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /login:
+    post:
+      summary: User Login
+      description: Authenticate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /user/{id}/edit:
+    patch:
+      summary: Edit User Profile
+      description: Edit user profile information
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            $ref: "#/components/schemas/Authorization"
+          description: Bearer JWT token required for authentication.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEditRequest'
+      responses:
+        '204':
+          description: Successful user profile edit
+          content: {}  # No content should be returned for a 204
+        '401':
+          description: Unauthorized - invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /user/{id}:
+    get:
+      summary: Get User Profile
+      description: Get user profile information
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            $ref: "#/components/schemas/Authorization"
+          description: Bearer JWT token required for authentication.
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful user profile retrieval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        '401':
+          description: Unauthorized - invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - phoneNumber
+        - password
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 10
+          maxLength: 13
+          pattern: '^\+62'
+          description: User's phone number (must start with "+62")
+        password:
+          type: string
+          minLength: 6
+          maxLength: 64
+          description: User's password (must contain at least 1 capital letter, 1 number, and 1 special character)
+    UserRegisterRequest:
+      type: object
+      required:
+        - phoneNumber
+        - fullName
+        - password
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 10
+          maxLength: 13
+          pattern: '^\+62'
+          description: User's phone number (must start with "+62")
+        fullName:
+          type: string
+          minLength: 3
+          maxLength: 60
+          description: User's full name
+        password:
+          type: string
+          minLength: 6
+          maxLength: 64
+          description: User's password (must contain at least 1 capital letter, 1 number, and 1 special character)
+    UserEditRequest:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 10
+          maxLength: 13
+          pattern: '^\+62'
+          description: User's phone number (optional, must start with "+62")
+        fullName:
+          type: string
+          minLength: 3
+          maxLength: 60
+          description: User's full name (optional)
+    LoginResponse:
+      type: object
+      required:
+        - userId
+        - jwt
+      properties:
+        userId:
+          type: integer
+          description: User's ID
+        jwt:
+          type: string
+          description: JSON Web Token (JWT)
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          description: User's ID
+        fullName:
+          type: string
+          description: User's full name
+        phoneNumber:
+          type: string
+          description: User's phone number
+    SuccessResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    Authorization:
+      type: string
+      description: Bearer JWT Token (Authorization header)
+
