@@ -44,3 +44,15 @@ func extractNumberFromString(str string) (int, error) {
 	cleanStr := strings.Trim(str, "{}")
 	return strconv.Atoi(cleanStr)
 }
+
+func StringToPtrString(val string) *string {
+	ptr := new(string)
+	*ptr = val
+	return ptr
+}
+
+func IntToPtrInt(val int) *int {
+	ptr := new(int)
+	*ptr = val
+	return ptr
+}

@@ -29,9 +29,6 @@ func (s *Server) RegisterNewUser(ctx context.Context, req *generated.UserRegiste
 		log.Errorf("error creating user: %v", err)
 		return err
 	}
-	fmt.Println("UserSalt:", saltKey)
-	fmt.Println("HashedPassword:", string(hashedPass))
-
 	return nil
 }
 
@@ -90,7 +87,6 @@ func (s *Server) FetchUserById(ctx context.Context, userId int) (*repository.Use
 }
 
 func (s *Server) EditUser(ctx context.Context, userId int, req *generated.UserEditRequest) error {
-	// Check if the phone number is already taken
 	user, err := s.Repository.GetUser(ctx, repository.GetUserInput{PhoneNumber: req.PhoneNumber})
 	if err != nil && err.Error() != commons.ErrorNoRow {
 		return err
@@ -99,7 +95,6 @@ func (s *Server) EditUser(ctx context.Context, userId int, req *generated.UserEd
 		return fmt.Errorf("phone number already exist")
 	}
 
-	// Update user
 	err = s.Repository.UpdateUser(ctx, repository.UserInput{
 		ID:          userId,
 		PhoneNumber: *req.PhoneNumber,

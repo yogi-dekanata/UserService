@@ -10,14 +10,14 @@ type Server struct {
 	Repository repository.RepositoryInterface
 	Jwt        middleware.JwtInterface
 	Pwd        commons.PasswordManagerInterface
-	Middleware middleware.IMiddleware
+	Middleware middleware.IMiddlewareInterface
 }
 
 type NewServerOptions struct {
 	Repository repository.RepositoryInterface
 	Jwt        middleware.JwtInterface
 	Pwd        commons.PasswordManagerInterface
-	Middleware middleware.IMiddleware
+	Middleware middleware.IMiddlewareInterface
 }
 
 func NewServer(opts NewServerOptions) *Server {

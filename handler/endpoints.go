@@ -43,7 +43,7 @@ func (s *Server) PostLogin(ctx echo.Context) error {
 	loginRequest := &generated.LoginRequest{}
 	err := bindAndValidate(ctx, loginRequest)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, generated.ErrorResponse{Message: err.Error()})
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	user, token, err := s.PerformLogin(ctx.Request().Context(), loginRequest)

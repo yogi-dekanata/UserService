@@ -45,8 +45,8 @@ type JwtInterface interface {
 	IsValid(tokenString string) (bool, error)
 }
 
-// IMiddleware ...
-type IMiddleware interface {
+// IMiddlewareInterface ...
+type IMiddlewareInterface interface {
 	Auth(next echo.HandlerFunc) echo.HandlerFunc
 }
 
