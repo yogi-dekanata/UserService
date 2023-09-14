@@ -9,6 +9,7 @@ import (
 	"github.com/SawitProRecruitment/UserService/commons"
 	"reflect"
 	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -78,8 +79,14 @@ func (r *Repository) GetUser(ctx context.Context, input GetUserInput) (*UserMode
 }
 
 func (r *Repository) UpdateUser(ctx context.Context, input UserInput) error {
-	//TODO implement me
-	panic("implement me")
+	currentTime := time.Now()
+	query := `
+		UPDATE %s 
+		SET phoneNumber=$1, fullName=$2, updatedAt=$3 
+		WHERE id=$4`
+	query = fmt.Sprintf(query, UserModel{}.TableName())
+	_, err := r.Db.ExecContext(ctx, query, input.PhoneNumber, input.FullName, currentTime, input.ID)
+	return err
 }
 
 func BuildQuery(input interface{}) (string, []interface{}) {

@@ -1,11 +1,14 @@
 package middleware
 
 import (
-	"net/http"
-
+	"fmt"
+	"github.com/SawitProRecruitment/UserService/commons"
 	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	"net/http"
+	"time"
 )
 
 // UserJwtPayload ...
@@ -74,17 +77,52 @@ func (m Middleware) Auth(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (j Jwt) CreateToken(jwtData UserJwtPayload, expireInHour int) (string, error) {
-	//TODO implement me
-	panic("implement me")
+func (j *Jwt) CreateToken(jwtData UserJwtPayload, expireInHour int) (string, error) {
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(j.PrivateKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse private key: %w", err)
+	}
+
+	token := jwt.New(jwt.SigningMethodRS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims[commons.IDClaimKey] = fmt.Sprint(jwtData)
+	claims[commons.ExpClaimKey] = time.Now().Add(time.Hour * time.Duration(expireInHour)).Unix()
+
+	tokenString, err := token.SignedString(privateKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign token: %w", err)
+	}
+	return tokenString, nil
 }
 
-func (j Jwt) ParseToken(tokenString string) (*JwtParsedPayload, error) {
-	//TODO implement me
-	panic("implement me")
+func (j *Jwt) IsValid(tokenString string) (bool, error) {
+	jwtData, err := j.ParseToken(tokenString)
+	if err != nil {
+		return false, fmt.Errorf("failed to validate token: %w", err)
+	}
+	return time.Unix(jwtData.Expire, 0).After(time.Now()), nil
 }
 
-func (j Jwt) IsValid(tokenString string) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+func (j *Jwt) ParseToken(tokenString string) (*JwtParsedPayload, error) {
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(j.PublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse public key: %w", err)
+	}
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return publicKey, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", err)
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	id, _ := commons.InterfaceToInt(claims[commons.IDClaimKey])
+	expire, _ := commons.InterfaceToInt64(claims[commons.ExpClaimKey])
+
+	return &JwtParsedPayload{ID: id, Expire: expire}, nil
 }

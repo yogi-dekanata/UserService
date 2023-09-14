@@ -117,7 +117,7 @@ func (s *Server) PatchUserIdEdit(ctx echo.Context, id int, params generated.Patc
 
 	err = s.EditUser(ctx.Request().Context(), data.ID, userEditRequest)
 	if err != nil {
-		if err.Error() == "phone number already exist" {
+		if err.Error() == commons.ErrUserExists {
 			return ctx.JSON(http.StatusConflict, generated.ErrorResponse{Message: err.Error()})
 		}
 		return ctx.JSON(http.StatusInternalServerError, generated.ErrorResponse{Message: commons.ErrSystemError})

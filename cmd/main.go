@@ -1,54 +1,52 @@
 package main
 
 import (
-	"github.com/SawitProRecruitment/UserService/commons"
+	"log"
 	"os"
 
+	"github.com/SawitProRecruitment/UserService/commons"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/handler"
 	"github.com/SawitProRecruitment/UserService/middleware"
 	"github.com/SawitProRecruitment/UserService/repository"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
 func main() {
-	e := echo.New()
-	srv, err := newServer()
+	e := initEcho()
+
+	server, err := newServer()
 	if err != nil {
 		log.Fatalf("Failed to initialize server: %v", err)
 	}
-	var server generated.ServerInterface = srv
 
 	generated.RegisterHandlers(e, server)
 
 	customGroup := e.Group("")
-	customGroup.Use(srv.Middleware.Auth)
+	customGroup.Use(server.Middleware.Auth)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	log.Fatal(e.Start(":8080"))
+}
+
+func initEcho() *echo.Echo {
+	e := echo.New()
+	return e
 }
 
 func newServer() (*handler.Server, error) {
 	dbDsn := os.Getenv("DATABASE_URL")
+	repo := repository.NewRepository(repository.NewRepositoryOptions{Dsn: dbDsn})
 
-	var repo repository.RepositoryInterface = repository.NewRepository(repository.NewRepositoryOptions{
-		Dsn: dbDsn,
-	})
+	jwtMiddleware := &middleware.Jwt{}
+	middle := middleware.NewMiddleware(jwtMiddleware, repo)
 
-	jwt := &middleware.Jwt{
-		PrivateKey: nil,
-		PublicKey:  nil,
-	}
-	m := middleware.NewMiddleware(jwt, repo)
-
-	// Initialize UserService here
-
-	opts := handler.NewServerOptions{
-		Middleware: m,
+	passwordManager := &commons.PasswordManager{}
+	serverOptions := handler.NewServerOptions{
+		Middleware: middle,
 		Repository: repo,
-		Pwd:        &commons.PasswordManager{},
+		Pwd:        passwordManager,
 	}
 
-	return handler.NewServer(opts), nil
+	return handler.NewServer(serverOptions), nil
 }
