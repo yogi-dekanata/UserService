@@ -63,6 +63,7 @@ func (s *Server) PostLogin(ctx echo.Context) error {
 }
 
 func (s *Server) GetUserId(ctx echo.Context, id int, params generated.GetUserIdParams) error {
+
 	data, err := s.Jwt.ParseToken(params.Authorization)
 	if err != nil {
 		log.Errorf("ParseToken, error when creating token err:%s", err.Error())

@@ -10,7 +10,7 @@ var Validate *validator.Validate
 
 func init() {
 	Validate = validator.New()
-	Validate.RegisterValidation("strongpwd", PasswordValidation)
+	Validate.RegisterValidation("password", PasswordValidation)
 }
 
 // PasswordValidation ...

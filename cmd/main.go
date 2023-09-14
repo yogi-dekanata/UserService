@@ -1,52 +1,78 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"github.com/SawitProRecruitment/UserService/commons"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/handler"
 	"github.com/SawitProRecruitment/UserService/middleware"
 	"github.com/SawitProRecruitment/UserService/repository"
-
 	"github.com/labstack/echo/v4"
+	"log"
+	"os"
 )
 
 func main() {
-	e := initEcho()
+	e := echo.New()
 
-	server, err := newServer()
+	server, err := initializeServer()
 	if err != nil {
 		log.Fatalf("Failed to initialize server: %v", err)
 	}
 
-	generated.RegisterHandlers(e, server)
-
-	customGroup := e.Group("")
-	customGroup.Use(server.Middleware.Auth)
+	registerRoutes(e, server)
 
 	log.Fatal(e.Start(":8080"))
 }
 
-func initEcho() *echo.Echo {
-	e := echo.New()
-	return e
-}
+func initializeServer() (*handler.Server, error) {
+	dbDsn := getEnv("DATABASE_URL", "")
 
-func newServer() (*handler.Server, error) {
-	dbDsn := os.Getenv("DATABASE_URL")
+	//dbDsn := "host=localhost port=5432 user=yogidekanata dbname=users password=newpassword sslmode=disable"
+
 	repo := repository.NewRepository(repository.NewRepositoryOptions{Dsn: dbDsn})
 
-	jwtMiddleware := &middleware.Jwt{}
-	middle := middleware.NewMiddleware(jwtMiddleware, repo)
-
-	passwordManager := &commons.PasswordManager{}
-	serverOptions := handler.NewServerOptions{
-		Middleware: middle,
-		Repository: repo,
-		Pwd:        passwordManager,
+	privateKey, publicKey, err := readKeys("private_key.pem", "public_key.pem")
+	if err != nil {
+		return nil, err
 	}
 
-	return handler.NewServer(serverOptions), nil
+	jwtMiddleware := &middleware.Jwt{PrivateKey: privateKey, PublicKey: publicKey}
+	middlewareInstance := middleware.NewMiddleware(jwtMiddleware, repo)
+
+	return handler.NewServer(handler.NewServerOptions{
+		Middleware: middlewareInstance,
+		Repository: repo,
+		Pwd:        &commons.PasswordManager{},
+		Jwt:        jwtMiddleware,
+	}), nil
+}
+
+func registerRoutes(e *echo.Echo, server *handler.Server) {
+	e.GET("/health", server.GetHealth) // Assume HealthCheckHandler is the method you use to handle health checks
+	authGroup := e.Group("/auth")
+	authGroup.Use(server.Middleware.Auth)
+	generated.RegisterHandlers(e, server)
+
+}
+
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
+}
+
+func readKeys(privateKeyPath, publicKeyPath string) ([]byte, []byte, error) {
+	privateKey, err := os.ReadFile(privateKeyPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	publicKey, err := os.ReadFile(publicKeyPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return privateKey, publicKey, nil
 }

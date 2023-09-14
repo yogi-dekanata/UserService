@@ -29,6 +29,9 @@ func (s *Server) RegisterNewUser(ctx context.Context, req *generated.UserRegiste
 		log.Errorf("error creating user: %v", err)
 		return err
 	}
+	fmt.Println("UserSalt:", saltKey)
+	fmt.Println("HashedPassword:", string(hashedPass))
+
 	return nil
 }
 

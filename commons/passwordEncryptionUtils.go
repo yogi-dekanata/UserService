@@ -11,7 +11,7 @@ const (
 	// EncryptionCost ...
 	EncryptionCost = 16
 	// SecretKey ...
-	SecretKey = "76@&*92_"
+	SecretKey = "&&hD23"
 	// MaxPasswordLength ...
 	MaxPasswordLength = 71
 )
@@ -42,12 +42,18 @@ func (pm *PasswordManager) GenerateHash(rawPassword string, userSalt string) (st
 
 // VerifyPassword ...
 func (pm *PasswordManager) VerifyPassword(rawPassword string, storedHash string, userSalt string) bool {
+	userSalt = strings.TrimSpace(userSalt)
+
 	enhancedPassword := addSaltAndKey(rawPassword, userSalt)
 	if len(enhancedPassword) > MaxPasswordLength {
 		enhancedPassword = enhancedPassword[:MaxPasswordLength]
 	}
+
 	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(enhancedPassword))
-	return err == nil
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 // CreateSalt ...

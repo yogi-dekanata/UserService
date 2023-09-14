@@ -19,13 +19,11 @@ type Repository struct {
 }
 
 func (r *Repository) CreateUser(ctx context.Context, input UserInput) (int, error) {
-	const queryTemplate = `
-		INSERT INTO %s (phoneNumber, fullName, password, saltKey)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id
-	`
-
-	query := fmt.Sprintf(queryTemplate, UserModel{}.TableName)
+	query := fmt.Sprintf(`
+			INSERT INTO %s (phoneNumber, fullName, password, saltKey)
+			VALUES ($1, $2, $3, $4)
+			RETURNING id
+		`, UserModel{}.TableName())
 
 	var userID int
 	if err := r.Db.QueryRowContext(ctx, query, input.PhoneNumber, input.FullName, input.Password, input.SaltKey).Scan(&userID); err != nil {

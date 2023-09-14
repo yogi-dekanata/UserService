@@ -170,11 +170,15 @@ components:
           maxLength: 13
           pattern: '^\+62'
           description: User's phone number (must start with "+62")
+          x-oapi-codegen-extra-tags:
+            validate: "required,min=10,max=13,startswith=+62"
         password:
           type: string
           minLength: 6
           maxLength: 64
           description: User's password (must contain at least 1 capital letter, 1 number, and 1 special character)
+          x-oapi-codegen-extra-tags:
+            validate: "required,min=6,max=64,password"
     UserRegisterRequest:
       type: object
       required:
@@ -188,16 +192,22 @@ components:
           maxLength: 13
           pattern: '^\+62'
           description: User's phone number (must start with "+62")
+          x-oapi-codegen-extra-tags:
+            validate: "required,min=10,max=13,startswith=+62"
         fullName:
           type: string
           minLength: 3
           maxLength: 60
           description: User's full name
+          x-oapi-codegen-extra-tags:
+            validate: "required,min=3,max=60"
         password:
           type: string
           minLength: 6
           maxLength: 64
           description: User's password (must contain at least 1 capital letter, 1 number, and 1 special character)
+          x-oapi-codegen-extra-tags:
+            validate: "required,min=6,max=64,password"
     UserEditRequest:
       type: object
       properties:
@@ -207,11 +217,15 @@ components:
           maxLength: 13
           pattern: '^\+62'
           description: User's phone number (optional, must start with "+62")
+          x-oapi-codegen-extra-tags:
+            validate: "required,min=10,max=13,startswith=+62"
         fullName:
           type: string
           minLength: 3
           maxLength: 60
           description: User's full name (optional)
+          x-oapi-codegen-extra-tags:
+            validate: "required,min=3,max=60"
     LoginResponse:
       type: object
       required:

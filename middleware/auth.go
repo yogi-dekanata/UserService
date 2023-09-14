@@ -120,9 +120,15 @@ func (j *Jwt) ParseToken(tokenString string) (*JwtParsedPayload, error) {
 	if !ok || !token.Valid {
 		return nil, fmt.Errorf("invalid token")
 	}
+	id, err := commons.ConvertInterfaceToInt(claims[commons.IDClaimKey])
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert ID: %w", err)
+	}
 
-	id, _ := commons.InterfaceToInt(claims[commons.IDClaimKey])
-	expire, _ := commons.InterfaceToInt64(claims[commons.ExpClaimKey])
+	exp, err := commons.ConvertInterfaceToInt64(claims[commons.ExpClaimKey])
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert Expire time: %w", err)
+	}
 
-	return &JwtParsedPayload{ID: id, Expire: expire}, nil
+	return &JwtParsedPayload{ID: id, Expire: exp}, nil
 }
